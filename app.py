@@ -33,7 +33,7 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date_posted = db.Column(db.String(20), nullable=False, default=datetime.utcnow().strftime('%d.%m.%Y'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)  # Добавлено поле для связи с категорией
 
@@ -63,12 +63,23 @@ class Comment(db.Model):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    posts = Post.query.all()
+    return render_template('index.html', posts=posts)
 
 
 @app.route('/about/')
 def about():
     return render_template('about.html')
+
+
+@app.route('/posts/<category_name>')
+def posts_by_category(category_name):
+    category = Category.query.filter_by(name=category_name).first()
+    if category:
+        category_posts = category.posts
+        return render_template('posts.html', posts=category_posts, category=category)
+    else:
+        return "Категория не найдена", 404
 
 
 if __name__ == '__main__':

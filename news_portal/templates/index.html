@@ -3,4 +3,10 @@
 
 {% block content %}
     <p>Это странциа ГЛАВНАЯ</p>
+    <br>
+    {% for p in posts %}
+        <p>Заголовок: {{ p.title }}</p>
+        <p>Описание: {{ p.content }}</p>
+        <p>Дата публикации: {{ p.date_posted }}</p>
+    {% endfor %}
 {% endblock content %}
