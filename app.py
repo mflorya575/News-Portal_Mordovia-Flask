@@ -1,19 +1,21 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
+from flask_login import UserMixin, LoginManager, login_user, logout_user, current_user
 
 
 app = Flask(__name__, template_folder='news_portal/templates', static_folder='news_portal/static')
+login_manager = LoginManager(app)
 app.config['SECRET_KEY'] = 'NRIVIUBIUguirgnuirngurty44844t48rugfnfbf'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -21,6 +23,18 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.username
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return str(self.id)
 
 
 class Category(db.Model):
@@ -60,10 +74,22 @@ class Comment(db.Model):
         return f"Comment('{self.body}', '{self.date_posted}')"
 
 
+# @app.route('/')
+# def index():
+#     posts = Post.query.all()
+#     category = Category.query.all()
+#     return render_template('index.html', posts=posts, category=category)
+
 @app.route('/')
 def index():
+    category_id = request.args.get('category_id')  # Получаем ID категории из запроса, если он есть
     posts = Post.query.all()
-    return render_template('index.html', posts=posts)
+    categories = Category.query.all()
+
+    if category_id:  # Если указан ID категории, фильтруем посты
+        posts = Post.query.filter_by(category_id=category_id).all()
+
+    return render_template('index.html', posts=posts, categories=categories)
 
 
 @app.route('/about/')
@@ -71,14 +97,41 @@ def about():
     return render_template('about.html')
 
 
-@app.route('/posts/<category_name>')
-def posts_by_category(category_name):
-    category = Category.query.filter_by(name=category_name).first()
-    if category:
-        category_posts = category.posts
-        return render_template('posts.html', posts=category_posts, category=category)
-    else:
-        return "Категория не найдена", 404
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:  # Если пользователь уже аутентифицирован, перенаправляем его
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        # Здесь нужно реализовать вашу логику аутентификации
+        user = User.query.filter_by(username=username).first()
+
+        if user and user.password == password:
+            login_user(user)
+            next_page = request.args.get('next')  # Переход на следующую страницу, если был предоставлен параметр next
+            return redirect(next_page or url_for('index'))
+        else:
+            return 'Invalid username or password'
+
+    return render_template('login.html')
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    # Загрузка пользователя из базы данных или другого источника данных по ID
+    return User.query.get(int(user_id))
+
+
+login_manager.init_app(app)
+
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return 'Logged out successfully'
 
 
 admin = Admin(app)

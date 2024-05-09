@@ -4,9 +4,36 @@
 {% block content %}
     <p>Это странциа ГЛАВНАЯ</p>
     <br>
+
     {% for p in posts %}
         <p>Заголовок: {{ p.title }}</p>
         <p>Описание: {{ p.content }}</p>
-        <p>Дата публикации: {{ p.date_posted }}</p>
     {% endfor %}
+    <br><br><br>
+    <h2>Категории:</h2>
+    {% for c in category %}
+        <p>{{ c.name }}</p>
+    {% endfor %}
+
+
+
+
+    <!-- Форма для выбора категории -->
+    <form action="/" method="get">
+        <select name="category_id">
+            <option value="">All Categories</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Filter</button>
+    </form>
+
+    <!-- Список постов -->
+    <ul>
+        {% for post in posts %}
+            <li>{{ post.title }} - {{ post.content }}</li>
+        {% endfor %}
+    </ul>
+
 {% endblock content %}
