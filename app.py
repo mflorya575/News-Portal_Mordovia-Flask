@@ -2,9 +2,12 @@ from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
+
 
 app = Flask(__name__, template_folder='news_portal/templates', static_folder='news_portal/static')
-# app.config['SECRET_KEY'] = 'hard to guess'
+app.config['SECRET_KEY'] = 'NRIVIUBIUguirgnuirngurty44844t48rugfnfbf'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -33,12 +36,8 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    date_posted = db.Column(db.String(20), nullable=False, default=datetime.utcnow().strftime('%d.%m.%Y'))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)  # Добавлено поле для связи с категорией
-
-    # Связь с моделью User
-    user = db.relationship('User', backref=db.backref('posts', lazy=True))
 
     # Связь с моделью Category
     category = db.relationship('Category', backref=db.backref('posts', lazy=True))
@@ -80,6 +79,15 @@ def posts_by_category(category_name):
         return render_template('posts.html', posts=category_posts, category=category)
     else:
         return "Категория не найдена", 404
+
+
+admin = Admin(app)
+
+# Зарегистрированные модели с административным интерфейсом
+admin.add_view(ModelView(User, db.session))
+admin.add_view(ModelView(Post, db.session))
+admin.add_view(ModelView(Comment, db.session))
+admin.add_view(ModelView(Category, db.session))
 
 
 if __name__ == '__main__':
