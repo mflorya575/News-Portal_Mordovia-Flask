@@ -3,9 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-<h1>Наследуюсь от базового шаблона</h1>
+    <div class="container">
+        <header class="header">
+            <a href="#" class="header-logo__link">
+                <img class="header-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="иконка логотипа">
+            </a>
+            <nav class="header__nav">
+                <ul class="header__ul">
+                    <li class="header__li"><a href="#" class="header__link">Главная</a></li>
+                    <li class="header__li"><a href="#" class="header__link">О нас</a></li>
+                    <!-- Форма для выбора категории -->
+                    <form class="header__form" action="/" method="get">
+                        <select class="header__select" name="category_id">
+                            <option value="">Все категории</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="header__btn" type="submit">Фильтр</button>
+                    </form>
+                </ul>
+            </nav>
+        </header>
+    </div>
+    <hr class="header__hr">
+
 {% block content %}
 
 {% endblock content %}
