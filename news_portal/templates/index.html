@@ -7,7 +7,11 @@
     <ul>
         {% for post in posts %}
             <li class="main__post-li">
-                <a href="{{ url_for('post_detail', post_id=post.id) }}" class="main__post-link">{{ post.title }}</a><br>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('post_detail', post_id=post.id) }}" class="main__post-link">{{ post.title }}</a><br>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="main__post-link">{{ post.title }}</a><br>
+                {% endif %}
                 <p class="main__content">{{ post.content | truncate(200) }}</p>
             </li>
         {% endfor %}
