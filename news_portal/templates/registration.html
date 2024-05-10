@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Регистрация</h1>
-    <form method="post" action="{{ url_for('register') }}">
+<h1 class="main__sec">Регистрация</h1><span class="main__span"><a id="main__a" href="{{ url_for('login') }}"> Уже есть аккаунт</a></span>
+    <form class="main__form2" method="post" action="{{ url_for('register') }}">
         {{ form.hidden_tag() }}
         <p>
             {{ form.username.label }}<br>
@@ -10,21 +10,21 @@
             {% for error in form.username.errors %}
                 <span style="color: red;">{{ error }}</span><br>
             {% endfor %}
-        </p>
+        </p><br>
         <p>
             {{ form.email.label }}<br>
             {{ form.email(size=32) }}<br>
             {% for error in form.email.errors %}
                 <span style="color: red;">{{ error }}</span><br>
             {% endfor %}
-        </p>
+        </p><br>
         <p>
             {{ form.password.label }}<br>
             {{ form.password(size=32) }}<br>
             {% for error in form.password.errors %}
                 <span style="color: red;">{{ error }}</span><br>
             {% endfor %}
-        </p>
+        </p><br>
         <p>
             {{ form.password2.label }}<br>
             {{ form.password2(size=32) }}<br>

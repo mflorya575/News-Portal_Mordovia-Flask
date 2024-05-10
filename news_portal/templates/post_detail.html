@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<p>{{ post.title }}</p><br>
+<h1 class="main__h1">{{ post.title }}</h1><br>
 <p class="main__content">{{ post.content }}</p>
 
 
@@ -13,16 +13,16 @@
         {{ form.body.label(class="form-control-label") }}
         {{ form.body(class="form-control") }}
     </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="submit" class="btn btn-primary main__btn">Отправить</button>
 </form>
 
 <!-- Отображение существующих комментариев -->
 <div class="comments">
-    <h2>Comments</h2>
+    <h2 class="main__h2">Комментарии</h2>
     {% for comment in comments %}
-        <div class="comment">
-            <p>Posted by: {{ comment.user.username }} at {{ comment.date_posted.strftime('%Y-%m-%d %H:%M') }}</p>
-            <p>{{ comment.body }}</p>
+        <div class="main__comment">
+            <p class="main__date">{{ comment.user.username }} at {{ comment.date_posted.strftime('%Y-%m-%d %H:%M') }}</p>
+            <p class="main__body">{{ comment.body }}</p>
         </div>
     {% endfor %}
 </div>

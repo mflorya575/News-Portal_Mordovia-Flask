@@ -92,7 +92,7 @@ class Comment(db.Model):
 
 
 class CommentForm(FlaskForm):
-    body = TextAreaField('Your comment', validators=[DataRequired()])
+    body = TextAreaField('', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 
