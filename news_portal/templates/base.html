@@ -31,9 +31,31 @@
     </div>
     <hr class="header__hr">
 
-{% block content %}
 
-{% endblock content %}
+
+    <div class="wrapper-base container">
+        {% block content %}
+
+        {% endblock content %}
+    </div>
+
+    <hr class="footer__hr">
+    <div class="container">
+        <footer class="footer">
+            <a href="#" class="footer-logo__link">
+                <img class="footer-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="иконка логотипа">
+            </a>
+            <nav class="footer__nav">
+                <ul class="footer__ul">
+                    <li class="footer__li"><a href="#" class="footer__link">Главная</a></li>
+                    <li class="footer__li"><a href="#" class="footer__link">О нас</a></li>
+                </ul>
+            </nav>
+        </footer>
+        <p class="footer__text">
+            &copy; 2024 Новостной портал «Мордовия Корреспондент»
+        </p>
+    </div>
 
 </body>
 </html>
