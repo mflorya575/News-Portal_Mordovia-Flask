@@ -1,6 +1,30 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
 <p>{{ post.title }}</p><br>
 <p class="main__content">{{ post.content }}</p>
+
+
+<!-- Форма для отправки комментариев -->
+<form method="post" action="{{ url_for('post_detail', post_id=post.id) }}">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        {{ form.body.label(class="form-control-label") }}
+        {{ form.body(class="form-control") }}
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+<!-- Отображение существующих комментариев -->
+<div class="comments">
+    <h2>Comments</h2>
+    {% for comment in comments %}
+        <div class="comment">
+            <p>Posted by: {{ comment.user.username }} at {{ comment.date_posted.strftime('%Y-%m-%d %H:%M') }}</p>
+            <p>{{ comment.body }}</p>
+        </div>
+    {% endfor %}
+</div>
+
 {% endblock content %}

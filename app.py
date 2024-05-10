@@ -1,10 +1,15 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import desc
 from datetime import datetime
 
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
-from flask_login import UserMixin, LoginManager, login_user, logout_user, current_user
+from flask_login import UserMixin, LoginManager, login_user, logout_user, current_user, login_required
+
+from flask_wtf import FlaskForm
+from wtforms import TextAreaField, SubmitField
+from wtforms.validators import DataRequired
 
 
 app = Flask(__name__, template_folder='news_portal/templates', static_folder='news_portal/static')
@@ -79,6 +84,11 @@ class Comment(db.Model):
         return f"Comment('{self.body}', '{self.date_posted}')"
 
 
+class CommentForm(FlaskForm):
+    body = TextAreaField('Your comment', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
 # @app.route('/')
 # def index():
 #     posts = Post.query.all()
@@ -94,18 +104,27 @@ def index():
     if category_id:  # Если указан ID категории, фильтруем посты
         posts = Post.query.filter_by(category_id=category_id).all()
 
-    return render_template('index.html', posts=posts, categories=categories)
+    return render_template('index.html', posts=posts, categories=categories, title='Главная')
 
 
-@app.route('/post/<int:post_id>')
+@app.route('/post/<int:post_id>', methods=['GET', 'POST'])
+@login_required
 def post_detail(post_id):
-    post = Post.query.get_or_404(post_id)  # Получить пост из базы данных по его идентификатору
-    return render_template('post_detail.html', post=post)
+    post = Post.query.get_or_404(post_id)
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment = Comment(body=form.body.data, post_id=post.id, user_id=current_user.id)
+        db.session.add(comment)
+        db.session.commit()
+        flash('Your comment has been published.')
+        return redirect(url_for('post_detail', post_id=post.id))
+    comments = Comment.query.filter_by(post_id=post.id).order_by(desc(Comment.date_posted)).all()
+    return render_template('post_detail.html', post=post, form=form, comments=comments, title='Новость')
 
 
 @app.route('/about/')
 def about():
-    return render_template('about.html')
+    return render_template('about.html', title='О нас')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -127,7 +146,7 @@ def login():
         else:
             return 'Invalid username or password'
 
-    return render_template('login.html')
+    return render_template('login.html', title='Вход')
 
 
 @login_manager.user_loader
@@ -142,7 +161,7 @@ login_manager.init_app(app)
 @app.route('/logout')
 def logout():
     logout_user()
-    return 'Logged out successfully'
+    return redirect(url_for('index'))
 
 
 admin = Admin(app)
