@@ -47,13 +47,13 @@
     <hr class="footer__hr">
     <div class="container">
         <footer class="footer">
-            <a href="#" class="footer-logo__link">
+            <a href="{{ url_for('index') }}" class="footer-logo__link">
                 <img class="footer-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="иконка логотипа">
             </a>
             <nav class="footer__nav">
                 <ul class="footer__ul">
-                    <li class="footer__li"><a href="#" class="footer__link">Главная</a></li>
-                    <li class="footer__li"><a href="#" class="footer__link">О нас</a></li>
+                    <li class="footer__li"><a href="{{ url_for('index') }}" class="footer__link">Главная</a></li>
+                    <li class="footer__li"><a href="{{ url_for('about') }}" class="footer__link">О нас</a></li>
                 </ul>
             </nav>
         </footer>

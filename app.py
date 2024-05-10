@@ -8,8 +8,9 @@ from flask_admin.contrib.sqla import ModelView
 from flask_login import UserMixin, LoginManager, login_user, logout_user, current_user, login_required
 
 from flask_wtf import FlaskForm
-from wtforms import TextAreaField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms import TextAreaField, SubmitField, StringField, PasswordField
+from wtforms.validators import DataRequired, EqualTo, Length, Email, Optional
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 app = Flask(__name__, template_folder='news_portal/templates', static_folder='news_portal/static')
@@ -23,12 +24,18 @@ db = SQLAlchemy(app)
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(80), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=True, default=None)
+    password_hash = db.Column(db.String(128), nullable=False)
     # posts = db.relationship('Post', backref='author', lazy='dynamic')
 
     def __repr__(self):
         return '<User %r>' % self.username
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
     def is_authenticated(self):
         return True
@@ -89,11 +96,13 @@ class CommentForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
-# @app.route('/')
-# def index():
-#     posts = Post.query.all()
-#     category = Category.query.all()
-#     return render_template('index.html', posts=posts, category=category)
+class RegistrationForm(FlaskForm):
+    username = StringField('Никнейм', validators=[DataRequired(), Length(min=3, max=20)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Пароль', validators=[DataRequired()])
+    password2 = PasswordField('Повторите пароль', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Зарегистрироваться')
+
 
 @app.route('/')
 def index():
@@ -139,7 +148,7 @@ def login():
         # Здесь нужно реализовать вашу логику аутентификации
         user = User.query.filter_by(username=username).first()
 
-        if user and user.password == password:
+        if user and user.password_hash == password:
             login_user(user)
             next_page = request.args.get('next')  # Переход на следующую страницу, если был предоставлен параметр next
             return redirect(next_page or url_for('index'))
@@ -162,6 +171,19 @@ login_manager.init_app(app)
 def logout():
     logout_user()
     return redirect(url_for('index'))
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Вы успешно зарегистрированы!')
+        return redirect(url_for('index'))
+    return render_template('registration.html', title='Регистрация', form=form)
 
 
 admin = Admin(app)
