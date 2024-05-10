@@ -20,6 +20,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), nullable=False)
+    # posts = db.relationship('Post', backref='author', lazy='dynamic')
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -55,6 +56,10 @@ class Post(db.Model):
 
     # Связь с моделью Category
     category = db.relationship('Category', backref=db.backref('posts', lazy=True))
+
+    # Добавляем внешний ключ и связь с пользователем
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    author = db.relationship('User', backref=db.backref('posts', lazy=True))
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.date_posted}')"
@@ -136,9 +141,15 @@ def logout():
 
 admin = Admin(app)
 
+
+class PostAdminView(ModelView):
+    column_list = ('id', 'title', 'content', 'date_posted', 'category', 'user_id', 'author')  # Заменили category_id и user_id на category и user
+    column_searchable_list = ['title']
+
+
 # Зарегистрированные модели с административным интерфейсом
 admin.add_view(ModelView(User, db.session))
-admin.add_view(ModelView(Post, db.session))
+admin.add_view(PostAdminView(Post, db.session))
 admin.add_view(ModelView(Comment, db.session))
 admin.add_view(ModelView(Category, db.session))
 
